@@ -1,0 +1,3 @@
+backend/bin/
+*.out
+.DS_Store
