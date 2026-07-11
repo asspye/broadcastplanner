@@ -62,6 +62,22 @@ func NewPlaylistItem(id string, asset MediaAsset, startOffset, sourceIn, sourceO
 	}
 }
 
+// NewCommentRow builds a comment row backed by a virtual placeholder asset,
+// mirroring the Swift PlaylistItem(commentText:) initializer.
+func NewCommentRow(text string) PlaylistItem {
+	return PlaylistItem{
+		ID: NewID(),
+		Asset: MediaAsset{
+			Name:   "Комментарий",
+			Path:   "/TVAssembly/CommentRow",
+			Kind:   KindUnknown,
+			Status: "Комментарий",
+		},
+		RowKind:     RowComment,
+		CommentText: text,
+	}
+}
+
 // IsCommentRow / IsBreakHeaderRow / IsLiveBreakPlaceholder / IsNonTimingRow
 // mirror the Swift computed flags. Non-timing rows do not advance the clock.
 func (p PlaylistItem) IsCommentRow() bool           { return p.RowKind == RowComment }

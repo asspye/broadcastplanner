@@ -32,13 +32,13 @@
 | Маркеры | `AdMarker`/`MarkerKind` | `playlist.go` | ✅ |
 | Сегментация по AD BREAK | `PlaylistSegmentation` | `segmentation.go` | ✅ |
 | ID (UUID) | `UUID` | `id.go` | ✅ |
-| **Пересчёт эфирного времени + суточные границы** | `recalculatePlaylist` | `recalculate.go` | ⬜ |
-| **Проверка качества (8 кодов)** | `buildPlaylistQualityReport` | `quality.go` | ⬜ |
+| **Пересчёт эфирного времени + суточные границы** | `recalculatePlaylist` | `recalculate.go` | ✅ |
+| **Проверка качества (8 кодов)** | `buildPlaylistQualityReport` | `quality.go` | ✅ |
 | Converter-проверка качества | `buildConverterPlaylistQualityReport` | `quality.go` | ⬜ |
-| segmentLabel «N из M» | `segmentLabel` | `segmentlabel.go` | ⬜ |
-| duplicateRangeKey / shouldRequireAdMarkers | там же | `quality.go` | ⬜ |
+| segmentLabel «N из M» | `segmentLabel` | `segmentlabel.go` | ✅ |
+| duplicateRangeKey / shouldRequireAdMarkers | там же | `quality.go` | ✅ |
 | Пакеты по датам эфира | `playlistExportBatchesByAirDate` | `batches.go` | ⬜ |
-| Даты эфира (валидация/±дни/формат) | `BroadcastAirDate` + helpers | `airdate.go` | ⬜ |
+| Даты эфира (валидация/±дни/формат) | `BroadcastAirDate` + helpers | `airdate.go` | ✅ |
 
 ### 1.2 Импорт → `internal/importer`
 | Логика | Источник | Go | Статус |
@@ -120,18 +120,18 @@
 ### Фаза 0 — каркас ✅
 Go-модуль, Docker (alpine+ffmpeg), compose (backend+postgres+minio), health, CI-тесты.
 
-### Фаза 1 — доменное ядро (🟡 идёт)
+### Фаза 1 — доменное ядро (🟡 почти готово)
 Шаги (каждый = коммит с тестами):
 1. ✅ framerate + timecode
 2. ✅ graphictag + asset + playlist + segmentation
-3. ⬜ **airdate.go** — валидация даты, `±дни`, формат `"DD MM YYYY"`, `isAirDateComment`.
-4. ⬜ **recalculate.go** — пересчёт `startOffset` от `clockStart`, вставка дата-комментариев
-   на суточных границах. Тесты: `playlistClockStartAppliesToRowsAndExport`,
-   `playlistClockStartWrapsAfterTwentyFourHours`.
-5. ⬜ **segmentlabel.go** — «N из M». Тест: `playlistSegmentLabelUsesSourceMarkersAcrossSplitRows`.
-6. ⬜ **quality.go** — 8 кодов проблем (MEDIA/DUR/READY/FPS/AD/RANGE/SHORT/DUP) + converter-режим.
-   Тесты: `playlistQualityReport*` (порог AD>10мин, SHORT<5с, FPS>0.2, диапазон, дубликаты).
-7. ⬜ **batches.go** — резка по дата-комментариям.
+3. ✅ **airdate.go** — валидация даты, `±дни`, формат `"DD MM YYYY"`, `isAirDateComment`.
+4. ✅ **recalculate.go** — пересчёт `startOffset` от `clockStart`, вставка дата-комментариев
+   на суточных границах. Тесты: clock-start, wrap 24h, air-date boundaries.
+5. ✅ **segmentlabel.go** — «N из M» (тест split-rows).
+6. ✅ **quality.go** — 8 кодов проблем (MEDIA/DUR/READY/FPS/AD/RANGE/SHORT/DUP).
+   Тесты: порог AD>10мин, SHORT<5с, FPS>0.2, диапазон вне файла, дубликаты.
+7. ⬜ **quality.go** — converter-режим (`buildConverterPlaylistQualityReport`).
+8. ⬜ **batches.go** — резка по дата-комментариям.
 
 ### Фаза 2 — экспорт (мультиформат, см. §3)
 1. ✅ TELE CSV (CP1251/UTF-8) + universal/segments/items CSV.
@@ -139,8 +139,8 @@ Go-модуль, Docker (alpine+ffmpeg), compose (backend+postgres+minio), healt
 3. ⬜ XML-адаптер (тест `playlistExporterWritesItemProfileRows`).
 4. ⬜ XLSX через `archive/zip` (без внешнего zip).
 5. ⬜ Каталог медиа CSV/XML/XLSX + импорт каталога (тесты `mediaCatalog*`).
-6. ⬜ **Адаптер Forward** (по образцам — см. §4).
-7. ⬜ **Адаптер BramTech** (по образцам — см. §4).
+6. ⬜ **Адаптер Forward** (ForwardT/FDOnAir) — **отложен**: ждём боевые образцы (см. §4).
+7. ⬜ **Адаптер BramTech** — **отложен**: ждём боевые образцы (см. §4).
 
 ### Фаза 3 — импортёры
 1. ⬜ normalize (`normalizedName`, `parseTime`) — тесты `markerImporterParsesTimecodeAndNormalizesNames`.
